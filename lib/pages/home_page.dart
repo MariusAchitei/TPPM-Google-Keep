@@ -1,20 +1,42 @@
-import 'package:animate_do/animate_do.dart';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_font_icons/flutter_font_icons.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:keep/json/notes_json.dart';
+import 'package:keep/json/note.dart';
 import 'package:keep/pages/card_detail_page.dart';
 import 'package:keep/pages/side_menu.dart';
 import 'package:keep/theme/colors.dart';
+import 'package:keep/utils/JsonUtils.dart';
 import 'package:page_transition/page_transition.dart';
+import 'dart:convert';
 
 class HomePage extends StatefulWidget {
+  List<Note>? notes = [];
+
+  HomePage({super.key, this.notes})
+
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
+  final GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
+
+  void refreshPage() {
+  }
+
+  @override
+  void initState() {
+    print("an initState()");
+    super.initState();
+    JsonUtils.loadNotes().then((value) => setState(() {
+          widget.notes = value;
+          print("an refreshPage()");
+          print(value);
+        }));
+    refreshPage();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,9 +50,23 @@ class _HomePageState extends State<HomePage> {
         onPressed: null,
         backgroundColor: bgColor,
         child: Center(
-          child: SvgPicture.asset(
-            "assets/images/google_icon.svg",
-            width: 30,
+          child: IconButton(
+            color: white.withOpacity(0.7),
+            icon: const Icon(Icons.add),
+            onPressed: () async {
+              var note = Note(
+                  "New Note",
+                  "",
+                  await JsonUtils.getMaximumIdFromJson('assets/notes.json') +
+                      1);
+              setState(() {
+                widget.notes!.add(note);
+              });
+              // write notes to json file
+              JsonUtils.appendToJsonFile('assets/notes.json', note)
+                  .then((value) => null);
+
+            },
           ),
         ),
       ),
@@ -41,7 +77,7 @@ class _HomePageState extends State<HomePage> {
     var size = MediaQuery.of(context).size;
     return SafeArea(
       child: ListView(
-        padding: EdgeInsets.only(bottom: 50),
+        padding: const EdgeInsets.only(bottom: 50),
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 15, right: 15),
@@ -70,43 +106,22 @@ class _HomePageState extends State<HomePage> {
                             color: white.withOpacity(0.7),
                           ),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: 10,
                         ),
                         Text(
                           "Search your notes",
                           style: TextStyle(
-                              fontSize: 15, color: white.withOpacity(0.7)),
+                              fontSize: 15, color: white.withOpacity(0.3)),
                         )
                       ],
                     ),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.grid_view,
-                          color: white.withOpacity(0.7),
-                        ),
-                        SizedBox(
-                          width: 10,
-                        ),
-                        Container(
-                          width: 30,
-                          height: 30,
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              image: DecorationImage(
-                                  image: NetworkImage(
-                                      "https://lh3.googleusercontent.com/a-/AOh14GhqYCtgODjBQZ2EcAvJApnWnnDPgZe80-AMM6tctw=s600-k-no-rp-mo"),
-                                  fit: BoxFit.cover)),
-                        )
-                      ],
-                    )
                   ],
                 ),
               ),
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 15,
           ),
           Column(
@@ -115,14 +130,14 @@ class _HomePageState extends State<HomePage> {
               Padding(
                 padding: const EdgeInsets.only(left: 15, right: 15),
                 child: Text(
-                  "PINNED",
+                  "All notes",
                   style: TextStyle(
                       fontWeight: FontWeight.w500,
                       fontSize: 11,
                       color: white.withOpacity(0.6)),
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
               getGridView()
@@ -136,23 +151,30 @@ class _HomePageState extends State<HomePage> {
   Widget getGridView() {
     var size = MediaQuery.of(context).size;
     return Column(
-      children: List.generate(notes.length, (index) {
-        List img = notes[index]['img'];
+      children: List.generate(widget.notes!.length, (index) {
         return GestureDetector(
           onTap: () {
             Navigator.push(
-                context,
-                PageTransition(
-                    type: PageTransitionType.scale,
-                    alignment: Alignment.bottomCenter,
-                    child: CardDetailPage(
-                      title: notes[index]['title'],
-                      description: notes[index]['description'],
-                      img: notes[index]['img'],
-                    )));
+                    context,
+                    PageTransition(
+                        type: PageTransitionType.scale,
+                        alignment: Alignment.bottomCenter,
+                        child: CardDetailPage(
+                            refreshMainPage: refreshPage,
+                            note: widget.notes![index])))
+                .then((value) {
+              print("----------------------->");
+              print(widget.notes![index]);
+              print("ffsdhnaf;kolnsdal;kfnsda\nfmsdlkfnlskdanflksdan\nfoinsdoaifnoisdaan\mfoisdhafoinsdaoifnsdaoif\noifnsadoifnsdaoiafnsdoinfsd\nofiasdnfoinsdaoifnsd");
+              // JsonUtils.loadNotes().then((value) => setState(() {
+              //       widget.notes = value;
+              //       print("an refreshPage()");
+              //       print(value);
+              //     }));
+              print(widget.notes![index]);
+            });
           },
-          child: ElasticIn(
-            duration: Duration(milliseconds: index * 850),
+          child: Container(
             child: Padding(
               padding: const EdgeInsets.only(right: 8, left: 8, bottom: 8),
               child: Container(
@@ -168,7 +190,7 @@ class _HomePageState extends State<HomePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        notes[index]['title'],
+                        widget.notes![index].title,
                         style: TextStyle(
                             fontSize: 15,
                             color: white.withOpacity(0.9),
@@ -177,39 +199,13 @@ class _HomePageState extends State<HomePage> {
                       SizedBox(
                         height: 8,
                       ),
-                      Text(notes[index]['description'],
+                      Text(widget.notes![index].description,
                           style: TextStyle(
                               fontSize: 13,
                               height: 1.5,
                               color: white.withOpacity(0.7),
                               fontWeight: FontWeight.w400)),
-                      img.length > 0
-                          ? Column(
-                              children: [
-                                SizedBox(
-                                  height: 12,
-                                ),
-                                Row(
-                                    children:
-                                        List.generate(img.length, (index) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(right: 5),
-                                    child: Container(
-                                      width: 25,
-                                      height: 25,
-                                      decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                              color: white.withOpacity(0.1)),
-                                          image: DecorationImage(
-                                              image: NetworkImage(img[index]),
-                                              fit: BoxFit.cover)),
-                                    ),
-                                  );
-                                }))
-                              ],
-                            )
-                          : Container()
+                      Container()
                     ],
                   ),
                 ),
