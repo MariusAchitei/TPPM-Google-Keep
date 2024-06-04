@@ -12,9 +12,9 @@ import 'package:page_transition/page_transition.dart';
 import 'dart:convert';
 
 class HomePage extends StatefulWidget {
-  List<Note>? notes = [];
+  List<Note> notes = [];
 
-  HomePage({super.key, this.notes})
+  HomePage({super.key});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -23,7 +23,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
 
-  void refreshPage() {
+  void refreshPage(index, note) {
+    setState(() {
+      widget.notes![index] = note;
+    });
   }
 
   @override
@@ -35,7 +38,7 @@ class _HomePageState extends State<HomePage> {
           print("an refreshPage()");
           print(value);
         }));
-    refreshPage();
+    // refreshPage();
   }
 
   @override
@@ -65,7 +68,6 @@ class _HomePageState extends State<HomePage> {
               // write notes to json file
               JsonUtils.appendToJsonFile('assets/notes.json', note)
                   .then((value) => null);
-
             },
           ),
         ),
@@ -151,7 +153,7 @@ class _HomePageState extends State<HomePage> {
   Widget getGridView() {
     var size = MediaQuery.of(context).size;
     return Column(
-      children: List.generate(widget.notes!.length, (index) {
+      children: List.generate(widget.notes.length, (index) {
         return GestureDetector(
           onTap: () {
             Navigator.push(
@@ -161,11 +163,14 @@ class _HomePageState extends State<HomePage> {
                         alignment: Alignment.bottomCenter,
                         child: CardDetailPage(
                             refreshMainPage: refreshPage,
+                            index: index,
                             note: widget.notes![index])))
                 .then((value) {
+              setState(() {});
               print("----------------------->");
               print(widget.notes![index]);
-              print("ffsdhnaf;kolnsdal;kfnsda\nfmsdlkfnlskdanflksdan\nfoinsdoaifnoisdaan\mfoisdhafoinsdaoifnsdaoif\noifnsadoifnsdaoiafnsdoinfsd\nofiasdnfoinsdaoifnsd");
+              print(
+                  "ffsdhnaf;kolnsdal;kfnsda\nfmsdlkfnlskdanflksdan\nfoinsdoaifnoisdaan\mfoisdhafoinsdaoifnsdaoif\noifnsadoifnsdaoiafnsdoinfsd\nofiasdnfoinsdaoifnsd");
               // JsonUtils.loadNotes().then((value) => setState(() {
               //       widget.notes = value;
               //       print("an refreshPage()");

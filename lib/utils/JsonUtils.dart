@@ -13,8 +13,9 @@ class JsonUtils {
   }
 
   static Future<void> appendToJsonFile(String filePath, dynamic newData) async {
-    File file = File(filePath);
-    String jsonString = await file.readAsString();
+    File file = File("assets/notes.json");
+    print(filePath);
+    String jsonString = await rootBundle.loadString("assets/notes.json");
     List<dynamic> jsonData = json.decode(jsonString);
 
     jsonData.add(newData);

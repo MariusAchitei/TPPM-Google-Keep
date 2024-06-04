@@ -9,13 +9,15 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 
 class CardDetailPage extends StatefulWidget {
   Note? note;
+  final int index;
   // final int noteId;
-  final VoidCallback refreshMainPage;
+  final Function refreshMainPage;
   // String title;
   // String description;
 
   CardDetailPage(
       {required this.refreshMainPage,
+      required this.index,
       // required this.noteId,
       // required this.title,
       // required this.description
@@ -66,8 +68,9 @@ class _CardDetailPageState extends State<CardDetailPage> {
           //       print("va salut de la back button");
           //       print(value);
           //     }));
+          widget.refreshMainPage(widget.index, widget.note);
           Navigator.pop(context);
-          widget.refreshMainPage();
+          // widget.refreshMainPage();
         },
         icon: Icon(
           Icons.arrow_back_ios,
