@@ -1,21 +1,31 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter/services.dart';
 import 'package:keep/json/note.dart';
 import 'dart:math';
+import 'package:path_provider/path_provider.dart';
 
 class JsonUtils {
+  static Future<File> getLocalFile() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/notes.json');
+    // if (!await file.exists()) {
+    await file.create();
+    await file.writeAsString('[]');
+    // }
+    return file;
+  }
+
   static Future<List<Note>> loadNotes() async {
-    final jsonString = await rootBundle.loadString('assets/notes.json');
+    final file = await getLocalFile();
+    String jsonString = await file.readAsString();
     final List<dynamic> jsonResponse = jsonDecode(jsonString);
     return jsonResponse.map<Note>((json) => Note.fromJson(json)).toList();
   }
 
   static Future<void> appendToJsonFile(String filePath, dynamic newData) async {
-    File file = File("assets/notes.json");
-    print(filePath);
-    String jsonString = await rootBundle.loadString("assets/notes.json");
+    final file = await getLocalFile();
+    String jsonString = await file.readAsString();
     List<dynamic> jsonData = json.decode(jsonString);
 
     jsonData.add(newData);
@@ -25,19 +35,18 @@ class JsonUtils {
   }
 
   static Future<int> getMaximumIdFromJson(String filePath) async {
-    final jsonString = await rootBundle.loadString('assets/notes.json');
+    final file = await getLocalFile();
+    String jsonString = await file.readAsString();
     final List<dynamic> jsonResponse = jsonDecode(jsonString);
     List<Note> notes =
         jsonResponse.map<Note>((json) => Note.fromJson(json)).toList();
     print(notes);
-    var salut = notes.map((e) => e.id);
-    print(salut);
-    print(salut.reduce(max));
-    return salut.reduce(max);
+    var ids = notes.map((e) => e.id);
+    return ids.isEmpty ? 1 : ids.reduce(max);
   }
 
   static Future<void> deleteNoteFromJson(String filePath, int id) async {
-    File file = File(filePath);
+    final file = await getLocalFile();
     String jsonString = await file.readAsString();
     List<dynamic> jsonData = json.decode(jsonString);
 
@@ -58,7 +67,8 @@ class JsonUtils {
 
   static Future<void> updateNoteFromJson(
       int noteId, String? title, String? description) async {
-    final jsonString = await rootBundle.loadString('assets/notes.json');
+    final file = await getLocalFile();
+    String jsonString = await file.readAsString();
     final List<dynamic> jsonResponse = jsonDecode(jsonString);
     List<Note> notes =
         jsonResponse.map<Note>((json) => Note.fromJson(json)).toList();
@@ -70,7 +80,6 @@ class JsonUtils {
     print(notes);
 
     String updatedJsonString = json.encode(notes);
-    File file = File('assets/notes.json');
     await file.writeAsString(updatedJsonString);
   }
 

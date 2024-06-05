@@ -9,7 +9,9 @@ import 'package:keep/pages/side_menu.dart';
 import 'package:keep/theme/colors.dart';
 import 'package:keep/utils/JsonUtils.dart';
 import 'package:page_transition/page_transition.dart';
-import 'dart:convert';
+import 'package:provider/provider.dart';
+import '../providers/theme_provider.dart';
+import '../services/note_service.dart';
 
 class HomePage extends StatefulWidget {
   List<Note> notes = [];
@@ -23,21 +25,28 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _drawerKey = GlobalKey();
 
+  bool _isGridView = false;
+  String? _selectedLabel;
+  bool _isLoading = true;
+
   void refreshPage(index, note) {
     setState(() {
       widget.notes![index] = note;
     });
   }
 
+  Future<void> _loadNotes() async {
+    final noteService = Provider.of<NoteService>(context, listen: false);
+    await noteService.loadNotes();
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
   @override
   void initState() {
-    print("an initState()");
     super.initState();
-    JsonUtils.loadNotes().then((value) => setState(() {
-          widget.notes = value;
-          print("an refreshPage()");
-          print(value);
-        }));
+    _loadNotes();
     // refreshPage();
   }
 

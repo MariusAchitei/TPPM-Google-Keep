@@ -1,12 +1,5 @@
 [
-  {
-    "title": "plm -cal 123456789",
-    "description": "plm 1234dasdasjhvkujuuio",
-    "id": 1
-  },
-  {
-    "title": "pp PP",
-    "description": "duplicate code is bad for ypur health 2500khujgjyhu",
-    "id": 2
-  }
+  { "title": "test", "description": "mairus", "id": 1 },
+  { "title": "test2", "description": "gabi-Achitei02", "id": 2 },
+  { "title": "New Note", "description": "", "id": 3 }
 ]
